@@ -3,14 +3,17 @@ import { Grid } from 'semantic-ui-react';
 import EventList from '../EventList/EventList';
 import { deleteEvent } from '../eventActions';
 import {connect} from 'react-redux';
+import LoadingComponent from '../../../app/layout/LoadingComponent'
 
 
 
 //////////////////////////////////redux flow/////////////////
 
 // state.events是你在rootreducer中设的名字， 那么对应reducer中state有好多分枝名称，你都没有specify，说明你要events的所有数据。
+// 异步加载：这里调用的是async reducer里面的 特意设置的loading state。因为你在async中设立了一个loading flag 作为一个state。这里把它从store中取出
 const mapState = state => ({
-    events: state.events
+    events: state.events,
+    loading: state.async.loading
 });
 
 const actions = {
@@ -167,7 +170,10 @@ class EventDashboard extends Component {
     //但是我们找不到，所以，我们要把这个function 特意BIND一下
    render() {
       // const {selectedEvent} = this.state;
-       const {events} = this.props;
+       const {events, loading} = this.props;
+
+       //如果有东西在loading，也就是loading（从store取出来会有true or false的update）为true，则显示这个loading的图标
+       if (loading) return <LoadingComponent inverted={true}/>
 
         // return (
         //     <Grid>

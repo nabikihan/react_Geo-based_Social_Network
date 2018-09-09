@@ -3,29 +3,46 @@ import { Menu, Container, Button } from 'semantic-ui-react';
 import { NavLink, Link, withRouter } from 'react-router-dom';
 import SignedOutMenu from '../Menus/SignedOutMenu';
 import SignedInMenu from '../Menus/SignedInMenu';
+import { openModal } from '../../modals/modalActions'
+import { logout } from '../../auth/authActions'
+
+import { connect } from 'react-redux'
+
+
+const actions = {
+    openModal,
+    logout
+}
+
+const mapState = (state) => ({
+    auth: state.auth
+})
 
 class NavBar extends Component {
-    state = {
-        authenticated: false
+
+/////////////////////////////////////////modal///////////////////////////////////////////////
+    // 调用modalaction中的 open modal需要把modal type传入,这里的写法要和modal manager对应
+    handleSignIn = () => {
+        this.props.openModal('LoginModal')
     };
 
-    handleSignIn = () => {
-        this.setState({
-            authenticated: true
-        });
-    };
+    handleRegister = () => {
+        this.props.openModal('RegisterModal')
+    }
 
     handleSignOut = () => {
-        this.setState({
-            authenticated: false
-        });
+        this.props.logout();
         this.props.history.push('/')
     };
 
     render() {
         //如果AUTH了，则显示sign out ， 没有AUTH 则显示signin
         //如果AUTH了，则显示people朋友 以及event ， 没有AUTH 则不显示这些私人相关的
-        const { authenticated } = this.state;
+
+        //这里的authenticATED 是 AUTH reducer中点名要改变的一个boolean，
+        const { auth} = this.props;
+        const authenticated = auth.authenticated;
+
         return (
             <Menu inverted fixed="top">
                 <Container>
@@ -48,10 +65,12 @@ class NavBar extends Component {
                             content="Create Event"
                         />
                     </Menu.Item>}
+
+                    {/*两个modal*/}
                     {authenticated ? (
-                        <SignedInMenu signOut={this.handleSignOut} />
+                        <SignedInMenu currentUser={auth.currentUser} signOut={this.handleSignOut}  />
                          ) : (
-                        <SignedOutMenu signIn={this.handleSignIn} />
+                        <SignedOutMenu register={this.handleRegister} signIn={this.handleSignIn} />
                     )}
                 </Container>
             </Menu>
@@ -63,4 +82,5 @@ class NavBar extends Component {
 
 //HOC ， with router，这样NAV BAR就有了router的属性，而且它就有了props history的属性
 //不然的话，你的NAV BAR上面的button/LINK 都不work
-export default withRouter(NavBar);
+
+export default withRouter(connect(mapState, actions)(NavBar));

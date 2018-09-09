@@ -9,10 +9,13 @@ import ScrollToTop from './app/common/util/ScrollToTop';
 import './index.css';
 import App from './app/layout/App';
 import registerServiceWorker from './registerServiceWorker';
+import { loadEvents } from './features/event/eventActions'
 
 /////////////////store//////////////////////////////
+//我们用 store来dispatch loadevents这个function。这样当我们 LOAD我们的app的时候，events也会被LOAD .
+// 这个loadevents这个function在eventaction里。
 const store = configureStore();
-
+store.dispatch(loadEvents())
 
 
 

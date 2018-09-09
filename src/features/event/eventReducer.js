@@ -1,56 +1,8 @@
 import { createReducer } from '../../app/common/util/reducerUtil';
-import { CREATE_EVENT, DELETE_EVENT, UPDATE_EVENT } from './eventConstants';
+import { CREATE_EVENT, DELETE_EVENT, FETCH_EVENTS, UPDATE_EVENT } from './eventConstants';
 
-const initialState = [
-    {
-        id: '1',
-        title: 'Trip to Tower of London',
-        date: '2018-03-27',
-        category: 'culture',
-        description:
-            'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus sollicitudin ligula eu leo tincidunt, quis scelerisque magna dapibus. Sed eget ipsum vel arcu vehicula ullamcorper.',
-        city: 'London, UK',
-        venue: "Tower of London, St Katharine's & Wapping, London",
-        hostedBy: 'Bob',
-        hostPhotoURL: 'https://randomuser.me/api/portraits/men/20.jpg',
-        attendees: [
-            {
-                id: 'a',
-                name: 'Bob',
-                photoURL: 'https://randomuser.me/api/portraits/men/20.jpg'
-            },
-            {
-                id: 'b',
-                name: 'Tom',
-                photoURL: 'https://randomuser.me/api/portraits/men/22.jpg'
-            }
-        ]
-    },
-    {
-        id: '2',
-        title: 'Trip to Punch and Judy Pub',
-        date: '2018-03-28',
-        category: 'drinks',
-        description:
-            'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus sollicitudin ligula eu leo tincidunt, quis scelerisque magna dapibus. Sed eget ipsum vel arcu vehicula ullamcorper.',
-        city: 'London, UK',
-        venue: 'Punch & Judy, Henrietta Street, London, UK',
-        hostedBy: 'Tom',
-        hostPhotoURL: 'https://randomuser.me/api/portraits/men/22.jpg',
-        attendees: [
-            {
-                id: 'b',
-                name: 'Tom',
-                photoURL: 'https://randomuser.me/api/portraits/men/22.jpg'
-            },
-            {
-                id: 'a',
-                name: 'Bob',
-                photoURL: 'https://randomuser.me/api/portraits/men/20.jpg'
-            }
-        ]
-    }
-];
+//原来这里是 fake data，后来data移到专门的folder中，这个就为空了。
+const initialState = [];
 
 //这里是从action 到 reducer（由containercomponent来dispatch) payload对应action中给的payload，也就是event
 // 这里的state为initial state，这个是在REDUCER UTIL中设置的对应关系。
@@ -78,8 +30,19 @@ export const deleteEvent = (state, payload) => {
     ]
 }
 
+
+//////////////////////////////FOR ASYNC///////////////////////
+
+//由于initial state为空， 所以我们这里fetchevent就要求把payload中 的events直接加到initial state中，所以写的这么简单。
+// 而且 payload中的events也是array，所以也不用什么麻烦的转化
+export const fetchEvents = (state, payload) => {
+    return payload.events
+}
+
+
 export default createReducer(initialState, {
     [CREATE_EVENT]: createEvent,
     [UPDATE_EVENT]: updateEvent,
-    [DELETE_EVENT]: deleteEvent
+    [DELETE_EVENT]: deleteEvent,
+    [FETCH_EVENTS]: fetchEvents
 })

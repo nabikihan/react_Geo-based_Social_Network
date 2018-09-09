@@ -10,6 +10,7 @@ import UserDetailedPage from '../../features/user/UserDetailed/UserDetailedPage'
 import PeopleDashboard from '../../features/user/PeopleDashboard/PeopleDashboard';
 import EventDetailedPage from '../../features/event/EventDetailed/EventDetailedPage';
 import HomePage from '../../features/home/HomePage';
+import ModalManager from '../../features/modals/ModalManager';
 
 
 
@@ -17,6 +18,10 @@ class App extends Component {
   render() {
     return (
       <div>
+
+          <ModalManager/>
+
+
         {/*这个container就像是bootstrap里的，把内容在里面打包，然后就可以把内容更好更规范的show出来*/}
         {/*switch就是为了防止这些页面一起show 出来*/}
         {/*这里我们写了一个判断条件，如果path能够exact match homepage，则显示homepage，否则的话，则看/后面有啥，然后对应match*/}
