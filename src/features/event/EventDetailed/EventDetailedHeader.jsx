@@ -1,6 +1,7 @@
 import React from 'react';
 import { Segment, Image, Item, Header, Button } from 'semantic-ui-react';
-import { Link } from 'react-router-dom'
+import { Link } from 'react-router-dom';
+import format from 'date-fns/format';
 
 
 //这两个style就是调整header的图片的深度，然后把标题显示到图片上面等等。在render中用他们
@@ -32,7 +33,7 @@ const EventDetailedHeader = ({event}) => {
                                     content={event.title}
                                     style={{ color: 'white' }}
                                 />
-                                <p>{event.date}</p>
+                                <p>{format(event.date, 'dddd Do MMMM')}</p>
                                 <p>
                                     Hosted by <strong>{event.hostedBy}</strong>
                                 </p>

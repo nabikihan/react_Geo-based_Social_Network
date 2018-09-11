@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import { Segment, Item, Icon, List, Button } from 'semantic-ui-react';
 import EventListAttendee from './EventListAttendee';
 import { Link } from 'react-router-dom';
+import format from 'date-fns/format';
 
 
 // as="a"的意思就是，它们都是link
@@ -27,15 +28,19 @@ class EventListItem extends Component {
 
                 <Segment>
                       <span>
-                        <Icon name="clock" /> {event.date}|
-                        <Icon name="marker" /> {event.venue}
+                        <Icon name="clock" /> {format(event.date, 'dddd Do MMMM')} at
+                          {format(event.date, 'HH:mm')}|
+                           <Icon name="marker" /> {event.venue}
                       </span>
                 </Segment>
 
                 <Segment secondary>
                     <List horizontal>
-                        {event.attendees && event.attendees.map((attendee) => (
-                            <EventListAttendee key={attendee.id} attendee={attendee}/>
+
+                        {/*这里，在用了firestore之后，由于我们把attendee设为object（原因笔记里说明了），所以我们不可以用map了
+                        所以我们用object.values把attendee转化为array*/}
+                        {event.attendees && Object.values(event.attendees).map((attendee, index) => (
+                            <EventListAttendee key={index} attendee={attendee}/>
                         ))}
 
                     </List>

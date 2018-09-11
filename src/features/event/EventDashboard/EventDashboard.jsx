@@ -2,8 +2,10 @@ import React, { Component } from 'react';
 import { Grid } from 'semantic-ui-react';
 import EventList from '../EventList/EventList';
 import { deleteEvent } from '../eventActions';
+import { firestoreConnect } from 'react-redux-firebase';
 import {connect} from 'react-redux';
-import LoadingComponent from '../../../app/layout/LoadingComponent'
+import LoadingComponent from '../../../app/layout/LoadingComponent';
+import EventActivity from '../EventActivity/EventActivity';
 
 
 
@@ -12,7 +14,9 @@ import LoadingComponent from '../../../app/layout/LoadingComponent'
 // state.events是你在rootreducer中设的名字， 那么对应reducer中state有好多分枝名称，你都没有specify，说明你要events的所有数据。
 // 异步加载：这里调用的是async reducer里面的 特意设置的loading state。因为你在async中设立了一个loading flag 作为一个state。这里把它从store中取出
 const mapState = state => ({
-    events: state.events,
+   // events: state.events,
+   // AFTER FIRESTORE, 关于为啥这么写，见笔记， ordered是个array，这就是datastructure。
+    events: state.firestore.ordered.events,
     loading: state.async.loading
 });
 
@@ -201,15 +205,27 @@ class EventDashboard extends Component {
 
        return (
            <Grid>
+
                <Grid.Column width={10}>
                    <EventList deleteEvent={this.handleDeleteEvent} events={events} />
                </Grid.Column>
-               <Grid.Column width={6} />
+
+               <Grid.Column width={6}>
+                   <EventActivity />
+               </Grid.Column>
+
            </Grid>
        );
     }
 }
 
-export default connect(mapState, actions)(EventDashboard);
+//export default connect(mapState, actions)(EventDashboard);
+
+// fire store这个HOC 可以让我们连接 redux store，input是firestorm要listen的collection，当前为event(这个必须和你设置fire store的名字database一致)
+// 啥叫做listen： 我们不是去fire store来取data，我们也不用send requests TO get data。我们使用fire store来listen TO changes，也就是说
+// anytime there is changes on our event， WE ARE LISTENING.
+export default connect(mapState, actions)(
+    firestoreConnect([{ collection: 'events' }])(EventDashboard)
+);
 
 

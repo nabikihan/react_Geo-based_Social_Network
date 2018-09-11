@@ -10,7 +10,9 @@ class EventList extends Component {
         return (
             <div>
 
-                {events.map((event) => (
+                {/*这里必须先 check是否有events，因为在使用fire store之后， 我们不再从memory中synchronous的取data（之前我们都是把fake data放在当前文件里面的），所以我们的*/}
+                {/*component会先loads before WE get access TO our events data*/}
+                {events && events.map((event) => (
                     <EventListItem key={event.id}
                                    event={event}
                                    deleteEvent={deleteEvent}/>
