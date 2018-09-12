@@ -4,6 +4,7 @@ import { asyncActionStart, asyncActionFinish, asyncActionError } from '../async/
 import { fetchSampleData } from '../../app/data/mockAPI'
 import { createNewEvent } from '../../app/common/util/helpers';
 import moment from 'moment';
+import firebase from '../../app/config/firebase';
 
 //////////////////////////////////////create events///////////////////////////////////////////
 
@@ -170,3 +171,77 @@ export const loadEvents = () => {
         }
     }
 }
+
+
+
+///////////////////////////////////////FOR chatting//////////////////////////////////////////
+export const getEventsForDashboard = lastEvent => async (dispatch, getState) => {
+    let today = new Date(Date.now());
+    const firestore = firebase.firestore();
+    const eventsRef = firestore.collection('events');
+    try {
+        dispatch(asyncActionStart());
+        let startAfter =
+            lastEvent &&
+            (await firestore
+                .collection('events')
+                .doc(lastEvent.id)
+                .get());
+        let query;
+
+        lastEvent
+            ? (query = eventsRef
+                .where('date', '>=', today)
+                .orderBy('date')
+                .startAfter(startAfter)
+                .limit(2))
+            : (query = eventsRef
+                .where('date', '>=', today)
+                .orderBy('date')
+                .limit(2));
+
+        let querySnap = await query.get();
+
+        if (querySnap.docs.length === 0) {
+            dispatch(asyncActionFinish());
+            return querySnap;
+        }
+
+        let events = [];
+
+        for (let i = 0; i < querySnap.docs.length; i++) {
+            let evt = { ...querySnap.docs[i].data(), id: querySnap.docs[i].id };
+            events.push(evt);
+        }
+        dispatch({ type: FETCH_EVENTS, payload: { events } });
+        dispatch(asyncActionFinish());
+        return querySnap;
+    } catch (error) {
+        console.log(error);
+        dispatch(asyncActionError());
+    }
+};
+
+
+// 想当前的event中push comment
+// 我们需要展示如下的各种参数，因为我们在识别user和comment的是由需要用到，参数都是firebase自己规定好的
+export const addEventComment = (eventId, values, parentId) =>
+    async (dispatch, getState, {getFirebase}) => {
+        const firebase = getFirebase();
+        const profile = getState().firebase.profile;
+        const user = firebase.auth().currentUser;
+        let newComment = {
+            parentId: parentId,
+            displayName: profile.displayName,
+            photoURL: profile.photoURL || '/assets/user.png',
+            uid: user.uid,
+            text: values.comment,
+            date: Date.now()
+        }
+        try {
+            await firebase.push(`event_chat/${eventId}`, newComment)
+        } catch (error) {
+            console.log(error);
+            toastr.error('Oops', 'Problem adding comment')
+        }
+    }

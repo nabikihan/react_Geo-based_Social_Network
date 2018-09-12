@@ -36,3 +36,20 @@ export const createNewEvent = (user, photoURL, event) => {
         }
     }
 }
+
+///////////////////////////////////for chatting////////////////////////////////////////////////
+// 用来handle reply的位置
+// 目前firebase中的数据是个flat array，就是这里的 input dataset，
+// 然后我们对于array里面的每一个元素都赋予一个ID，然后加一个空array用来放childID，类似哈希map的initialize
+// 我们开始建立data tree：如果元素有个parentID，我们就把该元素放到parentID的child array里面； 如果没有parentID ,则就是把该元素放进datatree里面
+// 这样我们的data tree就放入的parentID的节点，然后他对应的array就存入了他的孩子。
+export const createDataTree = dataset => {
+    let hashTable = Object.create(null);
+    dataset.forEach(a => hashTable[a.id] = {...a, childNodes: []});
+    let dataTree = [];
+    dataset.forEach(a => {
+        if (a.parentId) hashTable[a.parentId].childNodes.push(hashTable[a.id]);
+        else dataTree.push(hashTable[a.id])
+    });
+    return dataTree
+};

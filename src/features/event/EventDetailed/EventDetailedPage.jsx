@@ -1,16 +1,19 @@
 import React, { Component } from 'react';
 import { Grid } from 'semantic-ui-react';
 import { connect } from 'react-redux'
-import{withFirestore} from 'react-redux-firebase'
+import { compose } from 'redux';
+import{withFirestore, firebaseConnect, isEmpty} from 'react-redux-firebase'
 import EventDetailedHeader from './EventDetailedHeader';
 import EventDetailedInfo from './EventDetailedInfo';
 import EventDetailedChat from './EventDetailedChat';
 import EventDetailedSidebar from './EventDetailedSidebar';
 //import { toastr } from 'react-redux-toastr';
 
-import { objectToArray } from '../../../app/common/util/helpers';
+import { objectToArray, createDataTree } from '../../../app/common/util/helpers';
 import {goingToEvent} from "../../user/userActions";
 import {cancelGoingToEvent} from "../../user/userActions";
+
+import { addEventComment } from '../eventActions';
 
 
 //这里我们要从events array中得到当前要显示的那个event。
@@ -34,7 +37,7 @@ import {cancelGoingToEvent} from "../../user/userActions";
 // }
 
 // after firestore
-const mapState = state => {
+const mapState = (state, ownProps) => {
     let event = {};
 
     // 当array为空的时候，第一个条件也能过，所以要加第二个条件
@@ -44,14 +47,18 @@ const mapState = state => {
 
     return {
         event,
-        auth: state.firebase.auth
+        auth: state.firebase.auth,
+        eventChat:
+        !isEmpty(state.firebase.data.event_chat) &&
+        objectToArray(state.firebase.data.event_chat[ownProps.match.params.id])
     };
 };
 
 
 const actions = {
     goingToEvent,
-    cancelGoingToEvent
+    cancelGoingToEvent,
+    addEventComment
 };
 
 
@@ -77,7 +84,7 @@ class EventDetailedPage extends Component {
     }
 
     render() {
-        const { event, auth, goingToEvent, cancelGoingToEvent } = this.props;
+        const { event, auth, goingToEvent, cancelGoingToEvent, addEventComment, eventChat } = this.props;
 
         // 使用helper中的function，得到both KEY and VALUES,右侧显示attendee
         const attendees =
@@ -87,6 +94,11 @@ class EventDetailedPage extends Component {
         // 确定attendeE, 就是当前的user
         const isHost = event.hostUid === auth.uid;
         const isGoing = attendees && attendees.some(a => a.id === auth.uid);
+
+        // chat
+        const chatTree = !isEmpty(eventChat) && createDataTree(eventChat);
+
+
         return (
             <Grid>
                 <Grid.Column width={10}>
@@ -98,7 +110,7 @@ class EventDetailedPage extends Component {
                         cancelGoingToEvent={cancelGoingToEvent}
                     />
                     <EventDetailedInfo event={event} />
-                    <EventDetailedChat />
+                    <EventDetailedChat eventChat={chatTree} addEventComment={addEventComment} eventId={event.id} />
                 </Grid.Column>
 
                 {/*右侧显示attendee*/}
@@ -128,4 +140,11 @@ class EventDetailedPage extends Component {
 
 
 // 因为我们要从fire store取events数据，所以我们用firestore HOC
-export default withFirestore(connect(mapState, actions)(EventDetailedPage));
+//export default withFirestore(connect(mapState, actions)(EventDetailedPage));
+
+// after adding chat
+export default compose(
+    withFirestore,
+    connect(mapState, actions),
+    firebaseConnect(props => [`event_chat/${props.match.params.id}`])
+)(EventDetailedPage);
