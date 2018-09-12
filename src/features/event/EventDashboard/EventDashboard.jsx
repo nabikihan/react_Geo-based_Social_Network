@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { Grid } from 'semantic-ui-react';
 import EventList from '../EventList/EventList';
 import { deleteEvent } from '../eventActions';
-import { firestoreConnect } from 'react-redux-firebase';
+import { firestoreConnect, isLoaded, isEmpty  } from 'react-redux-firebase';
 import {connect} from 'react-redux';
 import LoadingComponent from '../../../app/layout/LoadingComponent';
 import EventActivity from '../EventActivity/EventActivity';
@@ -17,7 +17,8 @@ const mapState = state => ({
    // events: state.events,
    // AFTER FIRESTORE, 关于为啥这么写，见笔记， ordered是个array，这就是datastructure。
     events: state.firestore.ordered.events,
-    loading: state.async.loading
+    // 这个loading只是为了增加用户体验，我们用其他的东西来写。
+    //loading: state.async.loading
 });
 
 const actions = {
@@ -174,12 +175,15 @@ class EventDashboard extends Component {
     //但是我们找不到，所以，我们要把这个function 特意BIND一下
    render() {
       // const {selectedEvent} = this.state;
-       const {events, loading} = this.props;
+       const {events} = this.props;
 
        //如果有东西在loading，也就是loading（从store取出来会有true or false的update）为true，则显示这个loading的图标
-       if (loading) return <LoadingComponent inverted={true}/>
+       //if (loading) return <LoadingComponent inverted={true}/>
 
-        // return (
+       if (!isLoaded(events) || isEmpty(events)) return <LoadingComponent inverted={true} />;
+
+
+       // return (
         //     <Grid>
         //         <Grid.Column width={10}>
         //             <EventList events={events}

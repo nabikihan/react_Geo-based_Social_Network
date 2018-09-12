@@ -31,6 +31,13 @@ class EventDetailedInfo extends Component {
 
         //从 page中传入的
         const { event } = this.props;
+
+        // 使用fire store的格式来取出时间。
+        let eventDate;
+        if (event.date) {
+            eventDate = event.date.toDate()
+        }
+
         return (
             <Segment.Group>
 
@@ -53,7 +60,7 @@ class EventDetailedInfo extends Component {
                         <Grid.Column width={15}>
 
                             {/*时间 AM: PM*/}
-                            <span>{format(event.date, 'dddd Do MMM')} at {format(event.date, 'h:mm A')}</span>
+                            <span>{format(eventDate, 'dddd Do MMM')} at {format(eventDate, 'h:mm A')}</span>
                         </Grid.Column>
                     </Grid>
                 </Segment>

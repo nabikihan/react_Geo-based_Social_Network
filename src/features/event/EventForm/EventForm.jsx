@@ -5,16 +5,17 @@ import Script from 'react-load-script';
 import { geocodeByAddress, getLatLng } from 'react-places-autocomplete';
 import { reduxForm, Field } from 'redux-form';
 import { connect } from 'react-redux'
-import cuid from 'cuid';
-import { createEvent, updateEvent } from '../eventActions';
+//import cuid from 'cuid';
+import { createEvent, updateEvent, cancelToggle } from '../eventActions';
 
-import moment from 'moment';
 import { composeValidators, combineValidators, isRequired, hasLengthGreaterThan } from 'revalidate'
 import TextInput from '../../../app/common/form/TextInput';
 import TextArea from '../../../app/common/form/TextArea';
 import SelectInput from '../../../app/common/form/SelectInput';
 import DateInput from '../../../app/common/form/DateInput';
 import PlaceInput from '../../../app/common/form/PlaceInput';
+import { withFirestore } from 'react-redux-firebase';
+
 
 
 
@@ -33,23 +34,40 @@ import PlaceInput from '../../../app/common/form/PlaceInput';
 // create form： 这时，eventID是不存在的，event 也为空， 这时调用submit function，通过CUID create一个新的ID，填写各个空缺，这时由于我们用了field/REDUX FORM
 //              所以自动update了value（check之前的code版本，之前都是要在render里面设置value的，现在不用了），那么自动更新了value，这时我们跳用
 //              actions中的create function，把value + ID作为新的event传进去，就可以create了。
-const mapState = (state, ownProps) => {
-    const eventId = ownProps.match.params.id;
+// const mapState = (state, ownProps) => {
+//     const eventId = ownProps.match.params.id;
+//
+//     let event = {};
+//
+//     if (eventId && state.events.length > 0) {
+//         event = state.events.filter(event => event.id === eventId)[0];
+//     }
+//
+//     return {
+//         initialValues: event
+//     };
+// };
 
+// after firebase
+const mapState = (state) => {
     let event = {};
 
-    if (eventId && state.events.length > 0) {
-        event = state.events.filter(event => event.id === eventId)[0];
+    if (state.firestore.ordered.events && state.firestore.ordered.events[0]) {
+        event = state.firestore.ordered.events[0];
     }
 
     return {
-        initialValues: event
+        initialValues: event,
+        event
     };
 };
 
+
+
 const actions = {
     createEvent,
-    updateEvent
+    updateEvent,
+    cancelToggle
 }
 
 //redux form
@@ -267,30 +285,62 @@ class EventForm extends Component {
             })
     };
 
-
+/////////////////////////////////////////////////update  or create form///////////////////////////////////////////////////////////
     //redux form
 
     //这个value就是redux form，你input啥，它都给你记录成value
     // 注意这里 必须把VALIES.DATE转化为moment格式，不然redux不认
-
+    //在使用fire store之后，我们就不用自己create  newevent了。我们用这个函数填表之后就会有个events，它就是values
+    // 然后我们在里面调用 createeventactions， 把参数传入，就可以了， createeventactions里面有操作。
+    // 我们会在actions 中deal with 时间。这里就不用了
     onFormSubmit = values => {
-        values.date = moment(values.date).format();
+
         values.venueLatLng = this.state.venueLatLng;
         if (this.props.initialValues.id) {
+            if (Object.keys(values.venueLatLng).length === 0) {
+                values.venueLatLng = this.props.event.venueLatLng
+            }
+
             this.props.updateEvent(values);
             this.props.history.goBack();
         } else {
+            //
+            // const newEvent = {
+            //     ...values,
+            //     id: cuid(),
+            //     hostPhotoURL: '/assets/user.png',
+            //     hostedBy: 'Bob'
 
-            const newEvent = {
-                ...values,
-                id: cuid(),
-                hostPhotoURL: '/assets/user.png',
-                hostedBy: 'Bob'
-            };
-            this.props.createEvent(newEvent);
-            this.props.history.push('/events');
+                this.props.createEvent(values);
+                this.props.history.push('/events');
         }
+
     };
+
+    ///////////////////////after FIRESTORE, 我们从fire store中取data////////////////////////////
+    // async componentDidMount() {
+    //     const {firestore, match} = this.props;
+    //     await firestore.setListener(`events/${match.params.id}`);
+    // }
+
+    async componentDidMount() {
+        const { firestore, match } = this.props;
+
+        // 用.GET从fire store中取， 由于在eventlistitem中，我们设置了view button，把当前eventID 写在了路径了，这里用这个ID去firestore中找数据。
+        // let event = await firestore.get(`events/${match.params.id}`);
+        // if(event.exists) {
+        //     this.setState({
+        //         venueLatLng: event.data().venueLatLng
+        //     })
+        // }
+         await firestore.setListener(`events/${match.params.id}`);
+    }
+
+    async componentWillUnmount() {
+        const {firestore, match} = this.props;
+        await firestore.unsetListener(`events/${match.params.id}`);
+    }
+
 
 
     // render() {
@@ -344,7 +394,7 @@ class EventForm extends Component {
     // 对于每一个field，我们对于手动输入的部分 单独放在component中处理，因为涉及到输入是否valid的问题，component中的文件就是和手动输入的函数。
     // 主要就是handle 正常输入， 和触发了error之后怎么处理。
     render() {
-        const {invalid, submitting, pristine} = this.props;
+        const {invalid, submitting, pristine, event, cancelToggle} = this.props;
         return (
             <Grid>
 
@@ -435,6 +485,15 @@ class EventForm extends Component {
                             <Button onClick={this.props.history.goBack} type="button">
                                 Cancel
                             </Button>
+
+                            {/*toggle cancel*/}
+                            <Button
+                                onClick={() => cancelToggle(!event.cancelled, event.id)}
+                                type='button'
+                                color={event.cancelled ? 'green' : 'red'}
+                                floated='right'
+                                content={event.cancelled ? 'Reactivate Event' : 'Cancel Event'}
+                            />
                         </Form>
                     </Segment>
                 </Grid.Column>
@@ -446,8 +505,16 @@ class EventForm extends Component {
 
 //enableReinitialize: true 当你的props change了，例如你用其他的页面的button去调用 event form这个component，它会清空当前form，给你
 //一个全新的空form
-export default connect(mapState, actions)(
-    reduxForm({ form: 'eventForm', enableReinitialize: true, validate })(EventForm)
+// export default connect(mapState, actions)(
+//     reduxForm({ form: 'eventForm', enableReinitialize: true, validate })(EventForm)
+// );
+
+export default withFirestore(
+    connect(mapState, actions)(
+        reduxForm({ form: 'eventForm', enableReinitialize: true, validate })(
+            EventForm
+        )
+    )
 );
 
 

@@ -78,7 +78,7 @@ class NavBar extends Component {
                     {/*我们把AUTH 的情况 pass给signedin user，然后我们去SIGNEDIN MENU文件*/}
                     {/*在AUTH之后，我们要展示username，而不是 email，所以这里把 profile传入*/}
                     {authenticated ? (
-                        <SignedInMenu profile={profile} signOut={this.handleSignOut}  />
+                        <SignedInMenu auth={auth} profile={profile} signOut={this.handleSignOut}  />
                          ) : (
                         <SignedOutMenu register={this.handleRegister} signIn={this.handleSignIn} />
                     )}
