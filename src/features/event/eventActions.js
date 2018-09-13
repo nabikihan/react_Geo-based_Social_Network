@@ -174,7 +174,7 @@ export const loadEvents = () => {
 
 
 
-///////////////////////////////////////FOR chatting//////////////////////////////////////////
+///////////////////////////////////////FOR sorting//////////////////////////////////////////
 export const getEventsForDashboard = lastEvent => async (dispatch, getState) => {
     let today = new Date(Date.now());
     const firestore = firebase.firestore();
@@ -222,7 +222,7 @@ export const getEventsForDashboard = lastEvent => async (dispatch, getState) => 
     }
 };
 
-
+///////////////////////////////////////FOR chatting//////////////////////////////////////////
 // 想当前的event中push comment
 // 我们需要展示如下的各种参数，因为我们在识别user和comment的是由需要用到，参数都是firebase自己规定好的
 export const addEventComment = (eventId, values, parentId) =>
