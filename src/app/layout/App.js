@@ -11,7 +11,7 @@ import PeopleDashboard from '../../features/user/PeopleDashboard/PeopleDashboard
 import EventDetailedPage from '../../features/event/EventDetailed/EventDetailedPage';
 import HomePage from '../../features/home/HomePage';
 import ModalManager from '../../features/modals/ModalManager';
-
+import { UserIsAuthenticated } from '../../features/auth/authWrapper'
 
 
 class App extends Component {
@@ -20,11 +20,6 @@ class App extends Component {
       <div>
 
           <ModalManager/>
-
-
-        {/*这个container就像是bootstrap里的，把内容在里面打包，然后就可以把内容更好更规范的show出来*/}
-        {/*switch就是为了防止这些页面一起show 出来*/}
-        {/*这里我们写了一个判断条件，如果path能够exact match homepage，则显示homepage，否则的话，则看/后面有啥，然后对应match*/}
 
           <Switch>
               <Route exact path="/" component={HomePage} />
@@ -39,11 +34,11 @@ class App extends Component {
                           <Switch>
                               <Route path="/events" component={EventDashboard} />
                               <Route path="/event/:id" component={EventDetailedPage} />
-                              <Route path="/manage/:id" component={EventForm} />
-                              <Route path="/people" component={PeopleDashboard} />
-                              <Route path="/profile/:id" component={UserDetailedPage} />
-                              <Route path="/settings" component={SettingsDashboard} />
-                              <Route path="/createEvent" component={EventForm} />
+                              <Route path="/manage/:id" component={UserIsAuthenticated(EventForm)} />
+                              <Route path="/people" component={UserIsAuthenticated(PeopleDashboard)} />
+                              <Route path="/profile/:id" component={UserIsAuthenticated(UserDetailedPage)} />
+                              <Route path="/settings" component={UserIsAuthenticated(SettingsDashboard)} />
+                              <Route path="/createEvent" component={UserIsAuthenticated(EventForm)} />
                           </Switch>
                       </Container>
                   </div>

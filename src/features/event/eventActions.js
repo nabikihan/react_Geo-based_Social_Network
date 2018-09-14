@@ -5,39 +5,9 @@ import { fetchSampleData } from '../../app/data/mockAPI'
 import { createNewEvent } from '../../app/common/util/helpers';
 import moment from 'moment';
 import firebase from '../../app/config/firebase';
+import compareAsc from 'date-fns/compare_asc';
 
 //////////////////////////////////////create events///////////////////////////////////////////
-
-// 加 TOASTR之前
-// export const createEvent = (event) => {
-//     return {
-//         type: CREATE_EVENT,
-//         payload: {
-//             event
-//         }
-//     }
-// }
-
-// 加 TOASTR之后
-// export const createEvent = event => {
-//     return async dispatch => {
-//         try {
-//             dispatch({
-//                 type: CREATE_EVENT,
-//                 payload: {
-//                     event
-//                 }
-//             });
-//             toastr.success('Success', 'Event has been created')
-//         } catch (error) {
-//             toastr.error('Oops', 'Something went wrong')
-//         }
-//     };
-// };
-
-// 加了fire store之后。
-//我们的input event由 eventform产生并传入，然后我们通过fire store的function把各个参数取出，然后把这些参数作为input
-//给 helper function， 让它去create一个new活动，然后把新活动存入fire store就可以了。
 
 export const createEvent = event => {
     return async (dispatch, getState, { getFirestore }) => {
@@ -46,12 +16,8 @@ export const createEvent = event => {
         const photoURL = getState().firebase.profile.photoURL;
         let newEvent = createNewEvent(user, photoURL, event);
         try {
-
-            // 使用ADD, 这样 fire store会自动为我们create eventID
-            // 使用SET, firestore在create一个collection，并且把你规定的ID设为DOC ID .
             let createdEvent = await firestore.add(`events`, newEvent);
             await firestore.set(`event_attendee/${createdEvent.id}_${user.uid}`, {
-                //这里我们之所以把这四个取出来，因为我们要加filter，可以得到pastevent， futureevent等等
                 eventId: createdEvent.id,
                 userUid: user.uid,
                 eventDate: event.date,
@@ -69,50 +35,45 @@ export const createEvent = event => {
 
 /////////////////////////////////////update events///////////////////////////////////////////
 
-// 加 TOASTR之前
-// export const updateEvent = (event) => {
-//     return {
-//         type: UPDATE_EVENT,
-//         payload: {
-//             event
-//         }
-//     }
-// }
-// 加 TOASTR之后
-// export const updateEvent = event => {
-//     return async dispatch => {
-//         try {
-//             dispatch({
-//                 type: UPDATE_EVENT,
-//                 payload: {
-//                     event
-//                 }
-//             });
-//             toastr.success('Success', 'Event has been updated')
-//         } catch (error) {
-//             toastr.error('Oops', 'Something went wrong')
-//         }
-//     };
-// };
-
-//after firestore
-
 export const updateEvent = event => {
-    return async (dispatch, getState, { getFirestore }) => {
-        const firestore = getFirestore();
+    return async (dispatch, getState) => {
+        dispatch(asyncActionStart());
+        const firestore = firebase.firestore();
 
         if (event.date !== getState().firestore.ordered.events[0].date) {
             event.date = moment(event.date).toDate();
         }
         try {
-            await firestore.update(`events/${event.id}`, event);
+            let eventDocRef = firestore.collection('events').doc(event.id);
+            let dateEqual = compareAsc(getState().firestore.ordered.events[0].date.toDate(), event.date);
+            if (dateEqual !== 0) {
+                let batch = firestore.batch();
+                await batch.update(eventDocRef, event);
+
+                let eventAttendeeRef = firestore.collection('event_attendee');
+                let eventAttendeeQuery = await eventAttendeeRef.where('eventId', '==', event.id);
+                let eventAttendeeQuerySnap = await eventAttendeeQuery.get();
+
+                for (let i = 0; i < eventAttendeeQuerySnap.docs.length; i++) {
+                    let eventAttendeeDocRef = await firestore.collection('event_attendee').doc(eventAttendeeQuerySnap.docs[i].id);
+                    await batch.update(eventAttendeeDocRef, {
+                        eventDate: event.date
+                    })
+                }
+                await batch.commit();
+            } else {
+                await eventDocRef.update(event);
+            }
+            dispatch(asyncActionFinish());
             toastr.success('Success', 'Event has been updated');
         } catch (error) {
             console.log(error);
+            dispatch(asyncActionError());
             toastr.error('Oops', 'Something went wrong');
         }
     };
 };
+
 
 export const cancelToggle = (cancelled, eventId) => async (
     dispatch,
@@ -223,8 +184,6 @@ export const getEventsForDashboard = lastEvent => async (dispatch, getState) => 
 };
 
 ///////////////////////////////////////FOR chatting//////////////////////////////////////////
-// 想当前的event中push comment
-// 我们需要展示如下的各种参数，因为我们在识别user和comment的是由需要用到，参数都是firebase自己规定好的
 export const addEventComment = (eventId, values, parentId) =>
     async (dispatch, getState, {getFirebase}) => {
         const firebase = getFirebase();

@@ -3,7 +3,6 @@ import { Form, Label } from 'semantic-ui-react';
 import Script from 'react-load-script';
 import PlacesAutocomplete from 'react-places-autocomplete';
 
-//这就是让autocomplete的下拉菜单不透明，把后面的表单选项遮住。
 const styles = {
     autocompleteContainer: {
         zIndex: 1000
@@ -11,7 +10,6 @@ const styles = {
 }
 
 
-// scriptLoaded： flag，用来标记Google map script是否被LOAD
 class PlaceInput extends Component {
     state = {
         scriptLoaded: false
@@ -35,7 +33,6 @@ class PlaceInput extends Component {
                     onLoad={this.handleScriptLoaded}
                 />
 
-                {/*// autocomplete，就是下拉框给你一些location选项，你不用都type全你的地址*/}
                 {this.state.scriptLoaded && (
                     <PlacesAutocomplete
                         inputProps={{ ...input, placeholder }}

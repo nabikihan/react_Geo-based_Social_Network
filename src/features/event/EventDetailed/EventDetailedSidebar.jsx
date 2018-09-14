@@ -2,7 +2,6 @@ import React from 'react';
 import { Segment, List, Label, Item } from 'semantic-ui-react';
 import { Link } from 'react-router-dom'
 
-// input由detailpage传入
 const EventDetailedSidebar = ({ attendees }) => {
     const isHost = false;
     return (

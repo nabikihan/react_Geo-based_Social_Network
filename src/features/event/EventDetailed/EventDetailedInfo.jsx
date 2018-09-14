@@ -4,15 +4,12 @@ import EventDetailedMap from './EventDetailedMap';
 import format from 'date-fns/format'
 
 
-//我们设一个class，而不是一个function，是因为我们要track 一个state，就是设一个boolean来show map
 class EventDetailedInfo extends Component {
     state = {
         showMap: false
     }
 
 ///////////////////////////clean map for goolge firestore ///////////////////////////////////////
-// this is called immediately before a component is destroyed. we can perform necessary cleanup for any DOM created before
-    //这里我们只是简单的把toggle turn off
     componentWillUnmount() {
         this.setState({
             showMap: false
@@ -20,7 +17,6 @@ class EventDetailedInfo extends Component {
     }
 
 /////////////////////////////google map/////////////////////////////////////
-    //当我们要toggle一个东西的时候，我们要参照他的previous state，所以设定就是当前的showman 为previousstate的相反
     showMapToggle = () => {
         this.setState(prevState => ({
             showMap: !prevState.showMap
@@ -28,11 +24,8 @@ class EventDetailedInfo extends Component {
     }
 
     render() {
-
-        //从 page中传入的
         const { event } = this.props;
 
-        // 使用fire store的格式来取出时间。
         let eventDate;
         if (event.date) {
             eventDate = event.date.toDate()
@@ -58,8 +51,6 @@ class EventDetailedInfo extends Component {
                             <Icon name="calendar" size="large" color="teal" />
                         </Grid.Column>
                         <Grid.Column width={15}>
-
-                            {/*时间 AM: PM*/}
                             <span>{format(eventDate, 'dddd Do MMM')} at {format(eventDate, 'h:mm A')}</span>
                         </Grid.Column>
                     </Grid>

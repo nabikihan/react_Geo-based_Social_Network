@@ -59,7 +59,6 @@ const AboutPage = ({ pristine, submitting, handleSubmit, updateProfile }) => {
                     placeholder="Occupation"
                 />
 
-                {/*这里仍然直接用Google autocomplete，其中我们用regions也就是countries。*/}
                 <Field
                     width={8}
                     name="origin"
@@ -74,5 +73,4 @@ const AboutPage = ({ pristine, submitting, handleSubmit, updateProfile }) => {
     );
 };
 
-//userProfile: 就是随便起个redux form的名字，因为可以互相mount form
 export default reduxForm({ form: 'userProfile', enableReinitialize: true, destroyOnUnmount: false })(AboutPage);

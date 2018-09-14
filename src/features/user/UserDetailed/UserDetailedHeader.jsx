@@ -5,7 +5,6 @@ import differenceInYears from 'date-fns/difference_in_years'
 const UserDetailedHeader = ({profile}) => {
     let age;
 
-    // firestore 4.13之后，要求取生日的格式
     if (profile.dateOfBirth) {
         age = differenceInYears(Date.now(), profile.dateOfBirth.toDate())
     } else {

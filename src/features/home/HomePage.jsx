@@ -1,6 +1,5 @@
 import React from 'react';
 
-// props history的应用
 const HomePage = ({history}) => {
     return (
         <div>
@@ -17,7 +16,6 @@ const HomePage = ({history}) => {
 
                     <h2>Do whatever you want to do</h2>
 
-                    {/*这里我们用了history push， redirect TO events page*/}
                     <div onClick={() => history.push('/events')} className="ui huge white inverted button">
                         Get Started
                         <i className="right arrow icon" />

@@ -4,7 +4,7 @@ import { ASYNC_ACTION_START, ASYNC_ACTION_FINISH, ASYNC_ACTION_ERROR } from './a
 const initialState = {
     loading: false
 }
-//这里，如果你没有payload，你可以不写，但是为了create reducer的格式
+
 export const asyncActionStarted = (state, payload) => {
     return {...state, loading: true}
 }

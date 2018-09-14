@@ -19,9 +19,6 @@ import TextInput from '../../../app/common/form/TextInput';
 
 
 
-
-
-//////////////////////////////////////// validation
 const validate = combineValidators({
     newPassword1: isRequired({ message: 'Please enter a password' }),
     newPassword2: composeValidators(
@@ -31,8 +28,7 @@ const validate = combineValidators({
 });
 
 
-////////////////////////////////////////main function
-// 这些input是由settingsdashboard传入的。
+
 const AccountPage = ({
                          error,
                          invalid,

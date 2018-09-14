@@ -19,9 +19,6 @@ import 'cropperjs/dist/cropper.css';
 import { uploadProfileImage, deletePhoto, setMainPhoto } from '../userActions';
 
 
-////////////////////////////// 4。 show photos in card group/////////////////////////
-// 为了connect fire store，我们query AUTH, 因为我们要使用userI， 这样才能定位photo
-// storeAs: store reducer中对应的
 const query = ({ auth }) => {
     return [
         {
@@ -40,7 +37,6 @@ const actions = {
 };
 
 
-//loading: 就是在upload的时候 有个loading的标志
 const mapState = state => ({
     auth: state.firebase.auth,
     profile: state.firebase.profile,
@@ -52,16 +48,14 @@ const mapState = state => ({
 
 class PhotosPage extends Component {
 
-/////////////////////////////1。 DROPZONE: 需要files， filename/////////////////////
-    // 你可以上传多个图片，所以建立一个array，但是你只能每次拖动一个图片
+/////////////////////////////1。 DROPZONE/////////////////////
+
     state = {
         files: [],
         fileName: '',
         cropResult: null,
         image: {}
     };
-
-    // 我们不允许多个图片的drop，所以index为0
     onDrop = files => {
         this.setState({
             files,
@@ -121,7 +115,7 @@ class PhotosPage extends Component {
 /////////////////////////////////6。 MAIN:///////////////////////////////////
     handleSetMainPhoto = (photo) => async () => {
         try {
-            this.props.setMainPhoto(photo)
+            await this.props.setMainPhoto(photo)
         } catch (error) {
             toastr.error('Oops', error.message)
         }
@@ -133,8 +127,6 @@ class PhotosPage extends Component {
 //////////////////////////////////render/////////////////////////////////////////////
     render() {
         const { photos, profile, loading } = this.props;
-
-        //filter photos就是把不是当前头像的图片放到card group里，这样避免了main photo也别放到card grope里
         let filteredPhotos;
         if (photos) {
             filteredPhotos = photos.filter(photo => {
@@ -241,10 +233,11 @@ class PhotosPage extends Component {
     }
 }
 
-// 我们import compose，这样在有很多HOC的时候，可以用逗号隔开，可以让这里的code更加organized一点。
-//firestoreConnect： 我们直接与fire store的数据相连。例如在event dashboard中，我们直接query events。
-// 这里，我们要query AUTH 的原因是，我们需要从 fire store中得到userID，
+
 export default compose(
     connect(mapState, actions),
     firestoreConnect(auth => query(auth))
 )(PhotosPage);
+
+
+

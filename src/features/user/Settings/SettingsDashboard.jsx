@@ -17,17 +17,11 @@ const actions = {
 };
 
 const mapState = (state) => ({
-    // 见redux inspection中的firebase的数据存储格式。
-    // 我们要确保firebase的AUTH run了之后，灿能调用这个函数，所以我们去index.JS , 在render的时候加一个条件。
     providerId: state.firebase.auth.providerData[0].providerId,
     user: state.firebase.profile
 })
 
-// 我们从store中取出 updatepassword（actions中，这是个参数，不是函数） 和providerId
 const SettingsDashboard = ({ updatePassword, providerId, user, updateProfile }) => {
-
-    // redirect这个的意思就是，无论合适我们hit setting这个button，都会被redirect到basic page
-    // initialvalues: 就是每个path都会render一个表单，其中有起始占位的，是当前的user，然后你可以更改啊之类的。
     return (
         <Grid>
             <Grid.Column width={12}>

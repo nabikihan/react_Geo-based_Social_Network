@@ -20,6 +20,4 @@ const TestModal = ({closeModal}) => {
     );
 };
 
-
-// NULL是指 map state。我们这里没有用到 只是直接调用了action来关闭modal， 所以我们的第一个input为NULL
 export default connect(null, actions)(TestModal);

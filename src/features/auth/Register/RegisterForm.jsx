@@ -4,18 +4,15 @@ import { Field, reduxForm } from 'redux-form';
 import TextInput from '../../../app/common/form/TextInput';
 import { combineValidators, isRequired } from 'revalidate'
 
-import { registerUser, socialLogin } from '../authActions'
+import { registerUser} from '../authActions'
 import { connect } from 'react-redux'
 import SocialLogin from '../SocialLogin/SocialLogin'
 
 
-// 在firebase fire store中添加新用户。
 const actions = {
-    registerUser,
-    socialLogin
+    registerUser
 }
 
-// 规划一下input，validate一下，这些必须填写。
 const validate = combineValidators({
     displayName: isRequired('displayName'),
     email: isRequired('email'),
@@ -23,7 +20,6 @@ const validate = combineValidators({
 })
 
 
-// submitting等等，这些都是redux form props自带的。
 const RegisterForm = ({registerUser, handleSubmit, error, invalid, submitting}) => {
     return (
         <div>
@@ -59,9 +55,6 @@ const RegisterForm = ({registerUser, handleSubmit, error, invalid, submitting}) 
     );
 };
 
-
-
-//export default reduxForm({form: 'registerForm'})(RegisterForm);
 
 export default connect(null, actions)(reduxForm({form: 'registerForm', validate})(RegisterForm));
 

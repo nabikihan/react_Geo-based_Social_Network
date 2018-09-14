@@ -4,8 +4,6 @@ import { Link } from 'react-router-dom';
 import distanceInWordsToNow from 'date-fns/distance_in_words_to_now';
 
 
-
-// setup好 cloud firebase之后来handle这个
 class EventActivityItem extends Component {
     renderSummary = activity => {
         switch (activity.type) {

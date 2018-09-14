@@ -3,8 +3,6 @@ import { Header, Segment, Feed, Sticky } from 'semantic-ui-react'
 import EventActivityItem from './EventActivityItem'
 
 
-// EVENT dashboard的右侧显示内容
-// setup好 cloud firebase之后来handle这个
 const EventActivity = ({activities, contextRef}) => {
     return (
         <Sticky context={contextRef} offset={100}>

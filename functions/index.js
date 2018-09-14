@@ -1,10 +1,3 @@
-
-// // Create and Deploy Your First Cloud Functions
-// // https://firebase.google.com/docs/functions/write-firebase-functions
-//
-
-// 这三行将给我们access TO our admin functionality so that we don't need permissions. We get the full rights to the
-// applications automatically.
 const functions = require('firebase-functions');
 const admin = require('firebase-admin');
 admin.initializeApp(functions.config().firebase);
@@ -23,10 +16,6 @@ const newActivity = (type, event, id) => {
 };
 
 
-////////////////////////////////////////////////create activity////////////////////////////////////////////////////////
-// 我们create一个 function，一个 event，同时我们create一个new DOC， 然后我们要extract 这个event的一些参数。
-// 你console log的东西会出现在cloud functions的log中。
-//与此同时我们往fire store 中加new collection activity， 把对应的event ID等也加进去
 exports.createActivity = functions.firestore.document('events/{eventId}').onCreate(event => {
     let newEvent = event.data();
 
@@ -36,7 +25,6 @@ exports.createActivity = functions.firestore.document('events/{eventId}').onCrea
 
     console.log(activity);
 
-    // then和ASYNC是一样的
     return admin
         .firestore()
         .collection('activity')
@@ -49,9 +37,6 @@ exports.createActivity = functions.firestore.document('events/{eventId}').onCrea
         });
 });
 
-
-////////////////////////////////////////////////cancel/update activity////////////////////////////////////////////////////////
-// 所谓的update 就是 你cancel 之后 参数会有变化，例如cancel这个flag是true
 
 exports.cancelActivity = functions.firestore.document('events/{eventId}').onUpdate((event, context) => {
     let updatedEvent = event.after.data();
@@ -80,3 +65,54 @@ exports.cancelActivity = functions.firestore.document('events/{eventId}').onUpda
             return console.log('Error adding activity', err);
         });
 });
+
+////////////////
+exports.userFollowing = functions.firestore
+    .document('users/{followerUid}/following/{followingUid}')
+    .onCreate((event, context) => {
+        console.log('v1');
+        const followerUid = context.params.followerUid;
+        const followingUid = context.params.followingUid;
+
+        const followerDoc = admin
+            .firestore()
+            .collection('users')
+            .doc(followerUid);
+
+        console.log(followerDoc);
+
+        return followerDoc.get().then(doc => {
+            let userData = doc.data();
+            console.log({ userData });
+            let follower = {
+                displayName: userData.displayName,
+                photoURL: userData.photoURL || '/assets/user.png',
+                city: userData.city || 'unknown city'
+            };
+            return admin
+                .firestore()
+                .collection('users')
+                .doc(followingUid)
+                .collection('followers')
+                .doc(followerUid)
+                .set(follower);
+        });
+    });
+
+exports.unfollowUser = functions.firestore
+    .document('users/{followerUid}/following/{followingUid}')
+    .onDelete((event, context) => {
+        return admin
+            .firestore()
+            .collection('users')
+            .doc(context.params.followingUid)
+            .collection('followers')
+            .doc(context.params.followerUid)
+            .delete()
+            .then(() => {
+                return console.log('doc deleted');
+            })
+            .catch(err => {
+                return console.log(err);
+            });
+    });
