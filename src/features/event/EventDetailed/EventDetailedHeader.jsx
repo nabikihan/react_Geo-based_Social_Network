@@ -1,5 +1,5 @@
 import React from 'react';
-import { Segment, Image, Item, Header, Button } from 'semantic-ui-react';
+import { Segment, Image, Item, Header, Button, Label } from 'semantic-ui-react';
 import { Link } from 'react-router-dom';
 import format from 'date-fns/format';
 
@@ -61,6 +61,8 @@ const EventDetailedHeader = ({ openModal, authenticated, loading, event, isHost,
                         {!authenticated &&
                         <Button loading={loading} onClick={() => openModal('UnauthModal')} color="teal">JOIN THIS EVENT</Button>}
 
+                        {event.cancelled && !isHost &&
+                        <Label size='large' color='red' content='This event has been cancelled'/>}
                     </div>
                 )}
 
